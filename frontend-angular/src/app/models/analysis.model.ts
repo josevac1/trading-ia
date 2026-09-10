@@ -13,12 +13,27 @@ export interface CandleData {
   close: number;
 }
 
+export interface OrderLevels {
+  entry_price: number;
+  stop_loss: number;
+  take_profit: number;
+  risk_reward_ratio: number;
+}
+
 export interface RiskManagement {
   entry_price: number;
   stop_loss: number | null;
   take_profit: number | null;
   risk_reward_ratio: number;
   atr_value: number | null;
+  buy_scenario?: OrderLevels;
+  sell_scenario?: OrderLevels;
+}
+
+export interface ProbabilityBreakdown {
+  buy: number;
+  sell: number;
+  hold: number;
 }
 
 export interface AnalysisResponse {
@@ -37,4 +52,5 @@ export interface AnalysisResponse {
   };
   risk: RiskManagement;
   candles: CandleData[];
+  probabilities?: ProbabilityBreakdown;
 }

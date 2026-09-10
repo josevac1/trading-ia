@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TradingService } from './services/trading.service';
@@ -13,7 +13,7 @@ declare const TradingView: any;
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements AfterViewInit {
+export class App implements OnInit, AfterViewInit {
   private tradingService = inject(TradingService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -46,15 +46,61 @@ export class App implements AfterViewInit {
 
   selectedMarket = 'commodities';
   selectedSymbol = 'GOLD';
-  selectedTimeframe = 'D';
+  selectedTimeframe = '15';
 
+  selectedStockCategory: 'budget' | 'megacaps' = 'budget';
   loading = false;
+  loadingPicks = false;
   errorMessage = '';
   result: AnalysisResponse | null = null;
   copiedField: string | null = null;
+  topPicks: any[] = [];
+
+  // Memoria caché local en el frontend
+  picksCache: Record<string, any[]> = {};
+
+  ngOnInit() {
+    this.loadTopPicks();
+  }
 
   ngAfterViewInit() {
     this.renderTradingViewChart();
+  }
+
+  setStockCategory(category: 'budget' | 'megacaps') {
+    if (this.selectedStockCategory === category) return;
+    this.selectedStockCategory = category;
+
+    // Si ya existe en la memoria del navegador, el cambio es a 0ms (instantáneo)
+    if (this.picksCache[category]) {
+      this.topPicks = this.picksCache[category];
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.loadTopPicks();
+  }
+
+  loadTopPicks(forceRefresh = false) {
+    this.loadingPicks = true;
+    this.cdr.detectChanges();
+
+    if (forceRefresh) {
+      delete this.picksCache[this.selectedStockCategory];
+    }
+
+    this.tradingService.getTopPicks(this.selectedStockCategory).subscribe({
+      next: (res) => {
+        this.topPicks = res.picks || [];
+        this.picksCache[this.selectedStockCategory] = this.topPicks;
+        this.loadingPicks = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingPicks = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   onMarketChange() {
@@ -80,8 +126,7 @@ export class App implements AfterViewInit {
 
       if (typeof TradingView !== 'undefined') {
         new TradingView.widget({
-          width: '100%',
-          height: 600,
+          autosize: true,
           symbol: this.getCurrentTvSymbol(),
           interval: this.selectedTimeframe,
           timezone: 'Etc/UTC',

@@ -23,6 +23,102 @@
 
   <!-- Contenido Principal -->
   <main class="max-w-7xl mx-auto p-6 space-y-6">
+
+    <!-- Radar IA: Acciones Recomendadas con Etiquetas Técnicas y Filtro de Categoría -->
+    <section class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">
+            Radar IA: Acciones Recomendadas para Comprar (xStation)
+          </h3>
+        </div>
+
+        <!-- Selector de Categoría: Accesibles vs Megacaps -->
+        <div class="flex items-center gap-2 bg-[#090d16] p-1 rounded-xl border border-slate-800 text-xs">
+          <button (click)="setStockCategory('budget')" 
+                  [class.bg-emerald-500]="selectedStockCategory === 'budget'"
+                  [class.text-slate-950]="selectedStockCategory === 'budget'"
+                  [class.text-slate-400]="selectedStockCategory !== 'budget'"
+                  class="px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer">
+            Accesibles ($10 - $40)
+          </button>
+          <button (click)="setStockCategory('megacaps')" 
+                  [class.bg-emerald-500]="selectedStockCategory === 'megacaps'"
+                  [class.text-slate-950]="selectedStockCategory === 'megacaps'"
+                  [class.text-slate-400]="selectedStockCategory !== 'megacaps'"
+                  class="px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer">
+            Megacaps / Gigantes Tech
+          </button>
+          <button (click)="loadTopPicks()" [disabled]="loadingPicks" 
+                  class="px-2.5 py-1.5 text-slate-400 hover:text-white transition cursor-pointer" title="Refrescar Scanner">
+            ↻
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjetas de Acciones -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
+        @for (stock of topPicks; track stock.symbol) {
+          <div class="bg-[#090d16] border border-emerald-500/20 hover:border-emerald-500/50 transition-all rounded-xl p-4 space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-base font-bold text-white font-sans">{{ stock.symbol }}</span>
+                  
+                  <!-- Tag Cuantitativo (Momentum / Rebote / Tendencia) -->
+                  <span class="text-[9px] font-sans font-bold px-1.5 py-0.5 rounded border uppercase"
+                        [class.bg-cyan-500/10]="stock.tag_type === 'momentum'"
+                        [class.text-cyan-400]="stock.tag_type === 'momentum'"
+                        [class.border-cyan-500/30]="stock.tag_type === 'momentum'"
+                        [class.bg-amber-500/10]="stock.tag_type === 'rebote'"
+                        [class.text-amber-400]="stock.tag_type === 'rebote'"
+                        [class.border-amber-500/30]="stock.tag_type === 'rebote'"
+                        [class.bg-emerald-500/10]="stock.tag_type === 'trend'"
+                        [class.text-emerald-400]="stock.tag_type === 'trend'"
+                        [class.border-emerald-500/30]="stock.tag_type === 'trend'">
+                    {{ stock.tag }}
+                  </span>
+                </div>
+                <span class="text-[10px] text-slate-400 block font-sans">{{ stock.name }}</span>
+              </div>
+              <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg font-bold font-mono text-xs">
+                {{ stock.prob_buy }}%
+              </span>
+            </div>
+
+            <div class="space-y-1.5 text-[11px] pt-1 border-t border-slate-800">
+              <div class="flex justify-between text-slate-400">
+                <span>Precio Actual:</span> <strong class="text-white">${{ stock.current_price }}</strong>
+              </div>
+              <div class="flex justify-between text-rose-400">
+                <span>Stop Loss (-1.5 ATR):</span> <strong>${{ stock.stop_loss }}</strong>
+              </div>
+              <div class="flex justify-between text-emerald-400">
+                <span>Take Profit (+3.0 ATR):</span> <strong>${{ stock.take_profit }}</strong>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button (click)="copyToClipboard(stock.stop_loss, stock.symbol + '_sl')" 
+                      class="w-full py-1.5 bg-rose-950/40 hover:bg-rose-900 text-rose-300 rounded-lg transition text-[10px] cursor-pointer">
+                {{ copiedField === stock.symbol + '_sl' ? '✓ Copiado' : 'Copiar SL' }}
+              </button>
+              <button (click)="copyToClipboard(stock.take_profit, stock.symbol + '_tp')" 
+                      class="w-full py-1.5 bg-emerald-950/40 hover:bg-emerald-900 text-emerald-300 rounded-lg transition text-[10px] cursor-pointer">
+                {{ copiedField === stock.symbol + '_tp' ? '✓ Copiado' : 'Copiar TP' }}
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <div class="col-span-3 text-center py-6 text-slate-500 font-sans text-xs">
+            {{ loadingPicks ? 'Escaneando mercado en segundo plano...' : 'No se detectaron activos con los criterios actuales.' }}
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Grid Central: Panel de Control y Gráfico Interactivo -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       
       <!-- Panel de Control Lateral -->
@@ -95,7 +191,6 @@
           <span class="text-xs font-mono text-slate-400">{{ getCurrentTvSymbol() }}</span>
         </div>
         
-        <!-- Contenedor con altura y ancho fijos directos -->
         <div style="width: 100%; height: 600px; min-height: 600px;" class="rounded-xl overflow-hidden bg-[#090d16]">
           <div id="tv_chart_container" style="width: 100%; height: 100%;"></div>
         </div>
@@ -103,57 +198,135 @@
 
     </div>
 
-    <!-- Módulo de Órdenes Calculadas para xStation -->
+    <!-- Módulo de Probabilidades y Órdenes Duales para xStation -->
     @if (result?.risk) {
-      <section class="bg-gradient-to-r from-slate-900 to-[#0f172a] border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Parámetros de Entrada para xStation (Ratio 1:2)</h3>
-          </div>
-          <div class="text-xs font-mono text-slate-400 flex items-center gap-3">
-            <span>Decisión: <strong [class.text-emerald-400]="result?.decision === 'BUY'" [class.text-rose-400]="result?.decision === 'SELL'">{{ result?.decision }}</strong></span>
-            <span>ATR (14): <strong>{{ result?.risk?.atr_value }}</strong></span>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono">
-          <div class="bg-[#090d16] p-4 rounded-xl border border-slate-800 flex justify-between items-center">
-            <div>
-              <span class="text-[10px] text-slate-500 uppercase block font-sans">Precio Entrada</span>
-              <span class="text-lg font-bold text-white">{{ result?.risk?.entry_price }}</span>
+      <section class="space-y-4">
+        
+        <!-- Barra de Probabilidades -->
+        @if (result?.probabilities) {
+          <div class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full" 
+                      [class.bg-emerald-400]="result?.decision === 'BUY'" 
+                      [class.bg-rose-400]="result?.decision === 'SELL'"
+                      [class.bg-amber-400]="result?.decision === 'HOLD'"></span>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">
+                  Distribución Cuantitativa: Señal {{ result?.decision }} (Confianza: {{ ((result?.confidence || 0) * 100).toFixed(0) }}%)
+                </h3>
+              </div>
+              <span class="text-xs font-mono text-slate-400">ATR (14): <strong class="text-emerald-400">{{ result?.risk?.atr_value }}</strong></span>
             </div>
-            <button (click)="copyToClipboard(result?.risk?.entry_price ?? null, 'entry')" 
-                    class="px-3 py-1.5 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">
-              {{ copiedField === 'entry' ? '✓ Copiado' : 'Copiar' }}
-            </button>
+
+            <div class="flex justify-between text-xs font-mono">
+              <span class="text-emerald-400 font-bold">▲ Prob. Compra: {{ result?.probabilities?.buy }}%</span>
+              <span class="text-slate-400 font-semibold">■ Neutro: {{ result?.probabilities?.hold }}%</span>
+              <span class="text-rose-400 font-bold">▼ Prob. Venta: {{ result?.probabilities?.sell }}%</span>
+            </div>
+
+            <div class="h-2.5 w-full bg-slate-950 rounded-full flex overflow-hidden border border-slate-800">
+              <div [style.width.%]="result?.probabilities?.buy || 0" class="bg-emerald-500 transition-all duration-500"></div>
+              <div [style.width.%]="result?.probabilities?.hold || 0" class="bg-slate-600 transition-all duration-500"></div>
+              <div [style.width.%]="result?.probabilities?.sell || 0" class="bg-rose-500 transition-all duration-500"></div>
+            </div>
+          </div>
+        }
+
+        <!-- Escenarios Paralelos: Compra y Venta para xStation -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- TARJETA ESCENARIO COMPRA -->
+          <div class="bg-[#0f172a]/90 border border-emerald-500/30 rounded-2xl p-5 shadow-2xl space-y-4 relative overflow-hidden">
+            <div class="flex items-center justify-between pb-2 border-b border-emerald-500/20">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Escenario Compra (Long)</h4>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Ratio 1:2</span>
+            </div>
+            
+            <div class="space-y-2.5 font-mono text-xs">
+              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-slate-800">
+                <div>
+                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Precio Entrada</span>
+                  <span class="text-white font-bold text-base">{{ result?.risk?.buy_scenario?.entry_price }}</span>
+                </div>
+                <button (click)="copyToClipboard(result?.risk?.buy_scenario?.entry_price ?? null, 'buy_entry')" 
+                        class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">
+                  {{ copiedField === 'buy_entry' ? '✓ Copiado' : 'Copiar' }}
+                </button>
+              </div>
+
+              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-rose-500/20">
+                <div>
+                  <span class="text-[10px] text-rose-400 uppercase block font-sans">Stop Loss (-1.5 ATR)</span>
+                  <span class="text-rose-400 font-bold text-base">{{ result?.risk?.buy_scenario?.stop_loss }}</span>
+                </div>
+                <button (click)="copyToClipboard(result?.risk?.buy_scenario?.stop_loss ?? null, 'buy_sl')" 
+                        class="px-3 py-1.5 rounded-lg bg-rose-950/70 hover:bg-rose-900 text-rose-300 transition cursor-pointer">
+                  {{ copiedField === 'buy_sl' ? '✓ Copiado' : 'Copiar' }}
+                </button>
+              </div>
+
+              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-emerald-500/20">
+                <div>
+                  <span class="text-[10px] text-emerald-400 uppercase block font-sans">Take Profit (+3.0 ATR)</span>
+                  <span class="text-emerald-400 font-bold text-base">{{ result?.risk?.buy_scenario?.take_profit }}</span>
+                </div>
+                <button (click)="copyToClipboard(result?.risk?.buy_scenario?.take_profit ?? null, 'buy_tp')" 
+                        class="px-3 py-1.5 rounded-lg bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 transition cursor-pointer">
+                  {{ copiedField === 'buy_tp' ? '✓ Copiado' : 'Copiar' }}
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div class="bg-[#090d16] p-4 rounded-xl border border-rose-500/20 flex justify-between items-center">
-            <div>
-              <span class="text-[10px] text-rose-400 uppercase block font-sans">Stop Loss</span>
-              <span class="text-lg font-bold text-rose-400">{{ result?.risk?.stop_loss ?? 'Sin Orden' }}</span>
+          <!-- TARJETA ESCENARIO VENTA -->
+          <div class="bg-[#0f172a]/90 border border-rose-500/30 rounded-2xl p-5 shadow-2xl space-y-4 relative overflow-hidden">
+            <div class="flex items-center justify-between pb-2 border-b border-rose-500/20">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wider">Escenario Venta (Short)</h4>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">Ratio 1:2</span>
             </div>
-            @if (result?.risk?.stop_loss) {
-              <button (click)="copyToClipboard(result?.risk?.stop_loss ?? null, 'sl')" 
-                      class="px-3 py-1.5 text-xs rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 transition cursor-pointer">
-                {{ copiedField === 'sl' ? '✓ Copiado' : 'Copiar' }}
-              </button>
-            }
+            
+            <div class="space-y-2.5 font-mono text-xs">
+              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-slate-800">
+                <div>
+                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Precio Entrada</span>
+                  <span class="text-white font-bold text-base">{{ result?.risk?.sell_scenario?.entry_price }}</span>
+                </div>
+                <button (click)="copyToClipboard(result?.risk?.sell_scenario?.entry_price ?? null, 'sell_entry')" 
+                        class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">
+                  {{ copiedField === 'sell_entry' ? '✓ Copiado' : 'Copiar' }}
+                </button>
+              </div>
+
+              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-rose-500/20">
+                <div>
+                  <span class="text-[10px] text-rose-400 uppercase block font-sans">Stop Loss (+1.5 ATR)</span>
+                  <span class="text-rose-400 font-bold text-base">{{ result?.risk?.sell_scenario?.stop_loss }}</span>
+                </div>
+                <button (click)="copyToClipboard(result?.risk?.sell_scenario?.stop_loss ?? null, 'sell_sl')" 
+                        class="px-3 py-1.5 rounded-lg bg-rose-950/70 hover:bg-rose-900 text-rose-300 transition cursor-pointer">
+                  {{ copiedField === 'sell_sl' ? '✓ Copiado' : 'Copiar' }}
+                </button>
+              </div>
+
+              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-emerald-500/20">
+                <div>
+                  <span class="text-[10px] text-emerald-400 uppercase block font-sans">Take Profit (-3.0 ATR)</span>
+                  <span class="text-emerald-400 font-bold text-base">{{ result?.risk?.sell_scenario?.take_profit }}</span>
+                </div>
+                <button (click)="copyToClipboard(result?.risk?.sell_scenario?.take_profit ?? null, 'sell_tp')" 
+                        class="px-3 py-1.5 rounded-lg bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 transition cursor-pointer">
+                  {{ copiedField === 'sell_tp' ? '✓ Copiado' : 'Copiar' }}
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div class="bg-[#090d16] p-4 rounded-xl border border-emerald-500/20 flex justify-between items-center">
-            <div>
-              <span class="text-[10px] text-emerald-400 uppercase block font-sans">Take Profit</span>
-              <span class="text-lg font-bold text-emerald-400">{{ result?.risk?.take_profit ?? 'Sin Orden' }}</span>
-            </div>
-            @if (result?.risk?.take_profit) {
-              <button (click)="copyToClipboard(result?.risk?.take_profit ?? null, 'tp')" 
-                      class="px-3 py-1.5 text-xs rounded-lg bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 transition cursor-pointer">
-                {{ copiedField === 'tp' ? '✓ Copiado' : 'Copiar' }}
-              </button>
-            }
-          </div>
         </div>
       </section>
     }
