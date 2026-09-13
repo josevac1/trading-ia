@@ -14,9 +14,26 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-mono text-slate-400">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span>Feed: TradingView Live</span>
+      <div class="flex items-center gap-3">
+        <!-- Badge de Estado del Mercado Activo -->
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-mono transition-colors"
+             [class.bg-emerald-500/10]="currentMarketStatus.isOpen"
+             [class.border-emerald-500/30]="currentMarketStatus.isOpen"
+             [class.text-emerald-400]="currentMarketStatus.isOpen"
+             [class.bg-rose-500/10]="!currentMarketStatus.isOpen"
+             [class.border-rose-500/30]="!currentMarketStatus.isOpen"
+             [class.text-rose-400]="!currentMarketStatus.isOpen">
+          <span class="w-2 h-2 rounded-full"
+                [class.bg-emerald-400]="currentMarketStatus.isOpen"
+                [class.animate-pulse]="currentMarketStatus.isOpen"
+                [class.bg-rose-400]="!currentMarketStatus.isOpen"></span>
+          <span class="font-bold">{{ currentMarketStatus.label }}</span>
+        </div>
+
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-mono text-slate-400">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>Feed: TradingView Live</span>
+        </div>
       </div>
     </div>
   </header>
@@ -24,14 +41,26 @@
   <!-- Contenido Principal -->
   <main class="max-w-7xl mx-auto p-6 space-y-6">
 
-    <!-- Radar IA: Acciones Recomendadas con Etiquetas Técnicas y Filtro de Categoría -->
+    <!-- Radar IA con Click-to-Chart -->
     <section class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">
-            Radar IA: Acciones Recomendadas para Comprar (xStation)
-          </h3>
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full"
+                [class.bg-emerald-400]="stocksMarketStatus.isOpen"
+                [class.animate-ping]="stocksMarketStatus.isOpen"
+                [class.bg-rose-500]="!stocksMarketStatus.isOpen"></span>
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+              Radar IA: Acciones Recomendadas (Click para Ver Gráfico)
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded font-normal"
+                    [class.bg-emerald-500/10]="stocksMarketStatus.isOpen"
+                    [class.text-emerald-400]="stocksMarketStatus.isOpen"
+                    [class.bg-rose-500/10]="!stocksMarketStatus.isOpen"
+                    [class.text-rose-400]="!stocksMarketStatus.isOpen">
+                NYSE / NASDAQ: {{ stocksMarketStatus.label }}
+              </span>
+            </h3>
+          </div>
         </div>
 
         <!-- Selector de Categoría: Accesibles vs Megacaps -->
@@ -41,16 +70,16 @@
                   [class.text-slate-950]="selectedStockCategory === 'budget'"
                   [class.text-slate-400]="selectedStockCategory !== 'budget'"
                   class="px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer">
-            Accesibles ($10 - $40)
+            Accesibles ($10 - $50)
           </button>
           <button (click)="setStockCategory('megacaps')" 
                   [class.bg-emerald-500]="selectedStockCategory === 'megacaps'"
                   [class.text-slate-950]="selectedStockCategory === 'megacaps'"
                   [class.text-slate-400]="selectedStockCategory !== 'megacaps'"
                   class="px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer">
-            Megacaps / Gigantes Tech
+            Megacaps / Gigantes
           </button>
-          <button (click)="loadTopPicks()" [disabled]="loadingPicks" 
+          <button (click)="loadTopPicks(true)" [disabled]="loadingPicks" 
                   class="px-2.5 py-1.5 text-slate-400 hover:text-white transition cursor-pointer" title="Refrescar Scanner">
             ↻
           </button>
@@ -60,13 +89,12 @@
       <!-- Tarjetas de Acciones -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
         @for (stock of topPicks; track stock.symbol) {
-          <div class="bg-[#090d16] border border-emerald-500/20 hover:border-emerald-500/50 transition-all rounded-xl p-4 space-y-3">
+          <div class="bg-[#090d16] border border-emerald-500/20 hover:border-emerald-400/60 transition-all duration-200 rounded-xl p-4 space-y-3 hover:shadow-lg hover:shadow-emerald-950/30">
             <div class="flex justify-between items-start">
               <div>
                 <div class="flex items-center gap-2">
                   <span class="text-base font-bold text-white font-sans">{{ stock.symbol }}</span>
                   
-                  <!-- Tag Cuantitativo (Momentum / Rebote / Tendencia) -->
                   <span class="text-[9px] font-sans font-bold px-1.5 py-0.5 rounded border uppercase"
                         [class.bg-cyan-500/10]="stock.tag_type === 'momentum'"
                         [class.text-cyan-400]="stock.tag_type === 'momentum'"
@@ -99,33 +127,45 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 pt-1">
-              <button (click)="copyToClipboard(stock.stop_loss, stock.symbol + '_sl')" 
-                      class="w-full py-1.5 bg-rose-950/40 hover:bg-rose-900 text-rose-300 rounded-lg transition text-[10px] cursor-pointer">
-                {{ copiedField === stock.symbol + '_sl' ? '✓ Copiado' : 'Copiar SL' }}
+            <!-- Acciones de la Tarjeta -->
+            <div class="space-y-2 pt-1">
+              <button (click)="selectStockFromRadar(stock)" 
+                      class="w-full py-1.5 bg-slate-800 hover:bg-emerald-600 hover:text-slate-950 font-bold text-slate-200 rounded-lg transition-all text-[11px] cursor-pointer flex items-center justify-center gap-1.5">
+                <span>📈 Ver Gráfico Semanal</span>
               </button>
-              <button (click)="copyToClipboard(stock.take_profit, stock.symbol + '_tp')" 
-                      class="w-full py-1.5 bg-emerald-950/40 hover:bg-emerald-900 text-emerald-300 rounded-lg transition text-[10px] cursor-pointer">
-                {{ copiedField === stock.symbol + '_tp' ? '✓ Copiado' : 'Copiar TP' }}
-              </button>
+
+              <div class="grid grid-cols-2 gap-2">
+                <button (click)="copyToClipboard(stock.stop_loss, stock.symbol + '_sl')" 
+                        class="w-full py-1.5 bg-rose-950/40 hover:bg-rose-900 text-rose-300 rounded-lg transition text-[10px] cursor-pointer">
+                  {{ copiedField === stock.symbol + '_sl' ? '✓ Copiado' : 'Copiar SL' }}
+                </button>
+                <button (click)="copyToClipboard(stock.take_profit, stock.symbol + '_tp')" 
+                        class="w-full py-1.5 bg-emerald-950/40 hover:bg-emerald-900 text-emerald-300 rounded-lg transition text-[10px] cursor-pointer">
+                  {{ copiedField === stock.symbol + '_tp' ? '✓ Copiado' : 'Copiar TP' }}
+                </button>
+              </div>
             </div>
           </div>
         } @empty {
           <div class="col-span-3 text-center py-6 text-slate-500 font-sans text-xs">
-            {{ loadingPicks ? 'Escaneando mercado en segundo plano...' : 'No se detectaron activos con los criterios actuales.' }}
+            {{ loadingPicks ? 'Escaneando mercado semanal...' : 'No se detectaron activos con los criterios actuales.' }}
           </div>
         }
       </div>
     </section>
 
-    <!-- Grid Central: Panel de Control y Gráfico Interactivo -->
+    <!-- Grid Central: Panel de Control y Gráfico Oficial -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       
       <!-- Panel de Control Lateral -->
       <section class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-5 h-fit">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
           <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Selección de Activo</h2>
-          <span class="text-[11px] font-mono text-emerald-400">xStation</span>
+          <span class="text-[11px] font-mono"
+                [class.text-emerald-400]="currentMarketStatus.isOpen"
+                [class.text-rose-400]="!currentMarketStatus.isOpen">
+            {{ currentMarketStatus.isOpen ? '● Abierto' : '○ Cerrado' }}
+          </span>
         </div>
 
         <div class="space-y-1.5">
@@ -152,11 +192,10 @@
           <label class="text-xs font-semibold text-slate-400">Temporalidad Gráfico</label>
           <select [(ngModel)]="selectedTimeframe" (change)="renderTradingViewChart()"
                   class="w-full bg-[#090d16] border border-slate-700/80 rounded-xl px-3 py-2.5 text-sm font-mono text-slate-200 outline-none focus:border-emerald-500 transition-colors">
-            <option value="1">1 Minuto</option>
-            <option value="5">5 Minutos</option>
-            <option value="15">15 Minutos</option>
+            <option value="15">15 Minutos (Intradía)</option>
             <option value="60">1 Hora</option>
-            <option value="D">1 Día</option>
+            <option value="D">1 Día (Diario)</option>
+            <option value="W">1 Semana (Visión Macro)</option>
           </select>
         </div>
 
@@ -186,7 +225,15 @@
         <div class="flex items-center justify-between pb-3 mb-2 border-b border-slate-800/80">
           <div class="flex items-center gap-2">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Gráfico Interactivo Oficial</span>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Cotización en Vivo</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded border"
+                  [class.bg-emerald-500/10]="currentMarketStatus.isOpen"
+                  [class.border-emerald-500/20]="currentMarketStatus.isOpen"
+                  [class.text-emerald-400]="currentMarketStatus.isOpen"
+                  [class.bg-rose-500/10]="!currentMarketStatus.isOpen"
+                  [class.border-rose-500/20]="!currentMarketStatus.isOpen"
+                  [class.text-rose-400]="!currentMarketStatus.isOpen">
+              {{ currentMarketStatus.isOpen ? 'Cotización en Vivo' : 'Mercado en Pausa' }}
+            </span>
           </div>
           <span class="text-xs font-mono text-slate-400">{{ getCurrentTvSymbol() }}</span>
         </div>
@@ -198,11 +245,124 @@
 
     </div>
 
-    <!-- Módulo de Probabilidades y Órdenes Duales para xStation -->
+    <!-- Módulo de Gestión de Riesgo y Calculadora Financiera xStation -->
     @if (result?.risk) {
-      <section class="space-y-4">
+      <section class="space-y-6">
         
-        <!-- Barra de Probabilidades -->
+        <!-- CALCULADORA VINCULADA AL SUELDO Y CAPITAL REAL -->
+        <div class="bg-gradient-to-r from-[#0f172a] via-[#131d35] to-[#0f172a] border border-emerald-500/40 rounded-2xl p-5 shadow-2xl space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-2.5">
+              <span class="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-base shadow-md">
+                $
+              </span>
+              <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">
+                  Calculadora Financiera Personalizada (xStation)
+                </h3>
+                <span class="text-[10px] text-slate-400">Protección patrimonial según tu sueldo mensual y capital disponible</span>
+              </div>
+            </div>
+
+            <!-- Entradas del Perfil Financiero -->
+            <div class="flex flex-wrap items-center gap-3 font-mono text-xs">
+              
+              <!-- Sueldo Mensual -->
+              <div class="flex items-center gap-1.5 bg-[#090d16] px-3 py-1.5 rounded-xl border border-slate-800">
+                <span class="text-slate-400">Sueldo/Mes:</span>
+                <span class="text-teal-400 font-bold">$</span>
+                <input type="number" [(ngModel)]="userMonthlySalary" min="100" max="100000" step="50" 
+                       class="w-16 bg-transparent text-white font-bold outline-none text-right">
+              </div>
+
+              <!-- Capital en Broker -->
+              <div class="flex items-center gap-1.5 bg-[#090d16] px-3 py-1.5 rounded-xl border border-slate-800">
+                <span class="text-slate-400">Capital Cuenta:</span>
+                <span class="text-emerald-400 font-bold">$</span>
+                <input type="number" [(ngModel)]="accountCapital" min="50" max="100000" step="50" 
+                       class="w-16 bg-transparent text-white font-bold outline-none text-right">
+              </div>
+
+              <!-- Riesgo por Trade -->
+              <div class="flex items-center gap-1.5 bg-[#090d16] px-3 py-1.5 rounded-xl border border-slate-800">
+                <span class="text-slate-400">Riesgo:</span>
+                <select [(ngModel)]="riskPercentage" class="bg-transparent text-emerald-400 font-bold outline-none cursor-pointer">
+                  <option [value]="1">1% (${{ (accountCapital * 0.01).toFixed(1) }})</option>
+                  <option [value]="2">2% (${{ (accountCapital * 0.02).toFixed(1) }})</option>
+                  <option [value]="3">3% (${{ (accountCapital * 0.03).toFixed(1) }})</option>
+                  <option [value]="5">5% (${{ (accountCapital * 0.05).toFixed(1) }})</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Diagnóstico de Seguridad Financiera -->
+          <div class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-[#090d16]/70 rounded-xl border border-slate-800 text-[11px] font-mono">
+            <span class="text-slate-400">
+              Impacto por operación: Este trade arriesga <strong class="text-rose-400">${{ getRiskAmount().toFixed(2) }}</strong>, lo que equivale solo al <strong class="text-white">{{ getRiskVsSalaryPercentage() }}%</strong> de tu sueldo mensual.
+            </span>
+            <span class="text-emerald-400 font-semibold">
+              Límite mensual prudente: ${{ getMaxMonthlyLossAllowed().toFixed(0) }}/mes máx. en pérdidas
+            </span>
+          </div>
+
+          <!-- Resultados de Órdenes Listas para xStation -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Resultado Compra -->
+            <div class="bg-[#090d16] border border-emerald-500/20 rounded-xl p-4 space-y-2.5">
+              <div class="flex justify-between items-center pb-2 border-b border-slate-800 text-xs">
+                <span class="font-bold text-emerald-400">ORDEN COMPRA SUGERIDA</span>
+                <span class="text-[10px] text-slate-400 font-mono">Riesgo Máximo: ${{ getRiskAmount().toFixed(2) }}</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+                <div class="bg-[#0d1322] p-2.5 rounded-lg border border-slate-800">
+                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Volumen / Acciones</span>
+                  <strong class="text-lg text-emerald-400">{{ calculatePositionSize('buy').shares }}</strong>
+                  <span class="text-[10px] text-slate-400 ml-1">unidades</span>
+                </div>
+                <div class="bg-[#0d1322] p-2.5 rounded-lg border border-slate-800">
+                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Inversión Requerida</span>
+                  <strong class="text-lg text-white">${{ calculatePositionSize('buy').totalCost }}</strong>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center text-[11px] font-mono pt-1">
+                <span class="text-rose-400">Pérdida si toca SL: -${{ calculatePositionSize('buy').actualRisk }}</span>
+                <span class="text-emerald-400">Ganancia si toca TP: +${{ calculatePositionSize('buy').actualProfit }}</span>
+              </div>
+            </div>
+
+            <!-- Resultado Venta -->
+            <div class="bg-[#090d16] border border-rose-500/20 rounded-xl p-4 space-y-2.5">
+              <div class="flex justify-between items-center pb-2 border-b border-slate-800 text-xs">
+                <span class="font-bold text-rose-400">ORDEN VENTA (CORTO) SUGERIDA</span>
+                <span class="text-[10px] text-slate-400 font-mono">Riesgo Máximo: ${{ getRiskAmount().toFixed(2) }}</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+                <div class="bg-[#0d1322] p-2.5 rounded-lg border border-slate-800">
+                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Volumen / Acciones</span>
+                  <strong class="text-lg text-rose-400">{{ calculatePositionSize('sell').shares }}</strong>
+                  <span class="text-[10px] text-slate-400 ml-1">unidades</span>
+                </div>
+                <div class="bg-[#0d1322] p-2.5 rounded-lg border border-slate-800">
+                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Valor Posición</span>
+                  <strong class="text-lg text-white">${{ calculatePositionSize('sell').totalCost }}</strong>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center text-[11px] font-mono pt-1">
+                <span class="text-rose-400">Pérdida si toca SL: -${{ calculatePositionSize('sell').actualRisk }}</span>
+                <span class="text-emerald-400">Ganancia si toca TP: +${{ calculatePositionSize('sell').actualProfit }}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Barra de Probabilidades Cuantitativas -->
         @if (result?.probabilities) {
           <div class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-3">
             <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
@@ -232,10 +392,10 @@
           </div>
         }
 
-        <!-- Escenarios Paralelos: Compra y Venta para xStation -->
+        <!-- Tarjetas Duales de Niveles Técnicos -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          <!-- TARJETA ESCENARIO COMPRA -->
+          <!-- TARJETA COMPRA -->
           <div class="bg-[#0f172a]/90 border border-emerald-500/30 rounded-2xl p-5 shadow-2xl space-y-4 relative overflow-hidden">
             <div class="flex items-center justify-between pb-2 border-b border-emerald-500/20">
               <div class="flex items-center gap-2">
@@ -281,7 +441,7 @@
             </div>
           </div>
 
-          <!-- TARJETA ESCENARIO VENTA -->
+          <!-- TARJETA VENTA -->
           <div class="bg-[#0f172a]/90 border border-rose-500/30 rounded-2xl p-5 shadow-2xl space-y-4 relative overflow-hidden">
             <div class="flex items-center justify-between pb-2 border-b border-rose-500/20">
               <div class="flex items-center gap-2">

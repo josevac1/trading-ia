@@ -14,7 +14,9 @@ export class TradingService {
     return this.http.post<AnalysisResponse>(`${this.apiUrl}/analyze`, payload);
   }
 
-  getTopPicks(category: string = 'budget'): Observable<{ status: string; category: string; picks: any[] }> {
-    return this.http.get<{ status: string; category: string; picks: any[] }>(`${this.apiUrl}/top-picks?category=${category}`);
+  getTopPicks(category: string = 'budget', force: boolean = false): Observable<{ status: string; category: string; cached: boolean; picks: any[] }> {
+    return this.http.get<{ status: string; category: string; cached: boolean; picks: any[] }>(
+      `${this.apiUrl}/top-picks?category=${category}&force=${force}`
+    );
   }
 }
