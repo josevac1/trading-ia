@@ -417,11 +417,10 @@ export class App implements OnInit, OnDestroy, AfterViewInit {
           hide_side_toolbar: false,
           withdateranges: true,
           save_image: false,
-          // Indicadores nativos superpuestos en el gráfico
+          // Se cambiaron a los nombres compatibles del widget gratuito para evitar el error cannot_get_metainfo
           studies: [
-            'BB@tv-basicstudies',   // Bandas de Bollinger (detección de rangos y rupturas)
-            'EMA@tv-basicstudies',  // Media Móvil Exponencial (tendencia)
-            'ATR@tv-basicstudies'   // Average True Range (volatilidad)
+            'MASimple@tv-basicstudies',
+            'RSI@tv-basicstudies'
           ]
         });
       }
@@ -482,4 +481,3 @@ export class App implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 }
-  
