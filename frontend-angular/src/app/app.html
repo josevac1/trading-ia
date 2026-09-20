@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-[#090d16] text-slate-200">
-  <!-- Topbar -->
+  <!-- Header con Relojes en Vivo -->
   <header class="border-b border-slate-800/80 bg-[#0d1322]/80 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
@@ -10,60 +10,85 @@
         </div>
         <div>
           <span class="font-black text-lg tracking-tight text-white">TRADING <span class="text-emerald-400">AI</span></span>
-          <span class="ml-2 text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Terminal xStation</span>
+          <span class="ml-2 text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Terminal Cuantitativa</span>
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <!-- Badge de Estado del Mercado Activo -->
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-mono transition-colors"
-             [class.bg-emerald-500/10]="currentMarketStatus.isOpen"
-             [class.border-emerald-500/30]="currentMarketStatus.isOpen"
-             [class.text-emerald-400]="currentMarketStatus.isOpen"
-             [class.bg-rose-500/10]="!currentMarketStatus.isOpen"
-             [class.border-rose-500/30]="!currentMarketStatus.isOpen"
-             [class.text-rose-400]="!currentMarketStatus.isOpen">
-          <span class="w-2 h-2 rounded-full"
-                [class.bg-emerald-400]="currentMarketStatus.isOpen"
-                [class.animate-pulse]="currentMarketStatus.isOpen"
-                [class.bg-rose-400]="!currentMarketStatus.isOpen"></span>
-          <span class="font-bold">{{ currentMarketStatus.label }}</span>
+      <!-- Relojes sincronizados -->
+      <div class="flex items-center gap-3 font-mono text-xs">
+        <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
+          <span class="text-slate-500">EC:</span>
+          <strong class="text-white">{{ currentLocalTime }}</strong>
         </div>
-
-        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-mono text-slate-400">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          <span>Feed: TradingView Live</span>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
+          <span class="text-emerald-400">NY (Wall St):</span>
+          <strong class="text-emerald-300">{{ currentNyTime }}</strong>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Contenido Principal -->
   <main class="max-w-7xl mx-auto p-6 space-y-6">
 
-    <!-- Radar IA con Click-to-Chart -->
+    <!-- HORARIOS DE MERCADOS EN TIEMPO REAL -->
+    <section class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-4 shadow-2xl">
+      <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800/80">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">
+            Estado y Horarios de Apertura / Cierre en Vivo
+          </h3>
+        </div>
+        <span class="text-[10px] font-mono text-slate-400">Sincronizado cada 1s</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-xs">
+        @for (m of marketSchedules; track m.name) {
+          <div class="bg-[#090d16] p-3 rounded-xl border transition-colors"
+               [class.border-emerald-500/40]="m.isOpen"
+               [class.border-rose-500/30]="!m.isOpen">
+            <div class="flex justify-between items-start">
+              <span class="text-[11px] font-bold text-slate-200 font-sans block truncate" [title]="m.name">
+                {{ m.name }}
+              </span>
+              <span class="text-[9px] px-2 py-0.5 rounded font-bold"
+                    [class.bg-emerald-500/10]="m.isOpen"
+                    [class.text-emerald-400]="m.isOpen"
+                    [class.border]="m.isOpen"
+                    [class.border-emerald-500/30]="m.isOpen"
+                    [class.bg-rose-500/10]="!m.isOpen"
+                    [class.text-rose-400]="!m.isOpen"
+                    [class.border]="!m.isOpen"
+                    [class.border-rose-500/30]="!m.isOpen">
+                {{ m.statusLabel }}
+              </span>
+            </div>
+
+            <div class="mt-2 space-y-0.5">
+              <div class="text-[11px] font-bold"
+                   [class.text-emerald-400]="m.isOpen"
+                   [class.text-amber-400]="!m.isOpen">
+                ⏱ {{ m.countdownText }}
+              </div>
+              <div class="text-[10px] text-slate-500 truncate" [title]="m.tradingHours">
+                Horario: {{ m.tradingHours }}
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Radar IA: Acciones recomendadas -->
     <section class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
         <div class="flex items-center gap-2.5">
-          <span class="w-2.5 h-2.5 rounded-full"
-                [class.bg-emerald-400]="stocksMarketStatus.isOpen"
-                [class.animate-ping]="stocksMarketStatus.isOpen"
-                [class.bg-rose-500]="!stocksMarketStatus.isOpen"></span>
-          <div>
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
-              Radar IA: Acciones Recomendadas (Click para Ver Gráfico)
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded font-normal"
-                    [class.bg-emerald-500/10]="stocksMarketStatus.isOpen"
-                    [class.text-emerald-400]="stocksMarketStatus.isOpen"
-                    [class.bg-rose-500/10]="!stocksMarketStatus.isOpen"
-                    [class.text-rose-400]="!stocksMarketStatus.isOpen">
-                NYSE / NASDAQ: {{ stocksMarketStatus.label }}
-              </span>
-            </h3>
-          </div>
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+            Radar IA: Acciones Recomendadas (Click para Ver Gráfico)
+          </h3>
         </div>
 
-        <!-- Selector de Categoría: Accesibles vs Megacaps -->
         <div class="flex items-center gap-2 bg-[#090d16] p-1 rounded-xl border border-slate-800 text-xs">
           <button (click)="setStockCategory('budget')" 
                   [class.bg-emerald-500]="selectedStockCategory === 'budget'"
@@ -80,13 +105,12 @@
             Megacaps / Gigantes
           </button>
           <button (click)="loadTopPicks(true)" [disabled]="loadingPicks" 
-                  class="px-2.5 py-1.5 text-slate-400 hover:text-white transition cursor-pointer" title="Refrescar Scanner">
+                  class="px-2.5 py-1.5 text-slate-400 hover:text-white transition cursor-pointer" title="Refrescar">
             ↻
           </button>
         </div>
       </div>
 
-      <!-- Tarjetas de Acciones -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
         @for (stock of topPicks; track stock.symbol) {
           <div class="bg-[#090d16] border border-emerald-500/20 hover:border-emerald-400/60 transition-all duration-200 rounded-xl p-4 space-y-3 hover:shadow-lg hover:shadow-emerald-950/30">
@@ -94,7 +118,6 @@
               <div>
                 <div class="flex items-center gap-2">
                   <span class="text-base font-bold text-white font-sans">{{ stock.symbol }}</span>
-                  
                   <span class="text-[9px] font-sans font-bold px-1.5 py-0.5 rounded border uppercase"
                         [class.bg-cyan-500/10]="stock.tag_type === 'momentum'"
                         [class.text-cyan-400]="stock.tag_type === 'momentum'"
@@ -127,7 +150,6 @@
               </div>
             </div>
 
-            <!-- Acciones de la Tarjeta -->
             <div class="space-y-2 pt-1">
               <button (click)="selectStockFromRadar(stock)" 
                       class="w-full py-1.5 bg-slate-800 hover:bg-emerald-600 hover:text-slate-950 font-bold text-slate-200 rounded-lg transition-all text-[11px] cursor-pointer flex items-center justify-center gap-1.5">
@@ -154,335 +176,227 @@
       </div>
     </section>
 
-    <!-- Grid Central: Panel de Control y Gráfico Oficial -->
+    <!-- Controles y Gráfico -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      
-      <!-- Panel de Control Lateral -->
-      <section class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-5 h-fit">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Selección de Activo</h2>
-          <span class="text-[11px] font-mono"
-                [class.text-emerald-400]="currentMarketStatus.isOpen"
-                [class.text-rose-400]="!currentMarketStatus.isOpen">
-            {{ currentMarketStatus.isOpen ? '● Abierto' : '○ Cerrado' }}
-          </span>
-        </div>
+      <section class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4 h-fit">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-800">Activo Seleccionado</h2>
 
-        <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-slate-400">Mercado</label>
+        <div class="space-y-1">
+          <label class="text-xs text-slate-400 font-semibold">Mercado</label>
           <select [(ngModel)]="selectedMarket" (change)="onMarketChange()" 
-                  class="w-full bg-[#090d16] border border-slate-700/80 rounded-xl px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-emerald-500 transition-colors">
+                  class="w-full bg-[#090d16] border border-slate-700/80 rounded-xl px-3 py-2 text-sm text-slate-200 outline-none">
             @for (m of markets; track m.value) {
               <option [value]="m.value">{{ m.label }}</option>
             }
           </select>
         </div>
 
-        <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-slate-400">Ticker / Instrumento</label>
-          <select [(ngModel)]="selectedSymbol" (change)="onSymbolChange()"
-                  class="w-full bg-[#090d16] border border-slate-700/80 rounded-xl px-3 py-2.5 text-sm font-mono text-emerald-400 font-semibold outline-none focus:border-emerald-500 transition-colors">
+        <div class="space-y-1">
+          <label class="text-xs text-slate-400 font-semibold">Instrumento</label>
+          <select [(ngModel)]="selectedSymbol" (change)="onSymbolChange()" 
+                  class="w-full bg-[#090d16] border border-slate-700/80 rounded-xl px-3 py-2 text-sm font-mono text-emerald-400 font-bold outline-none">
             @for (s of symbols[selectedMarket]; track s.value) {
               <option [value]="s.value">{{ s.label }}</option>
             }
           </select>
         </div>
 
-        <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-slate-400">Temporalidad Gráfico</label>
-          <select [(ngModel)]="selectedTimeframe" (change)="renderTradingViewChart()"
-                  class="w-full bg-[#090d16] border border-slate-700/80 rounded-xl px-3 py-2.5 text-sm font-mono text-slate-200 outline-none focus:border-emerald-500 transition-colors">
+        <div class="space-y-1">
+          <label class="text-xs text-slate-400 font-semibold">Temporalidad</label>
+          <select [(ngModel)]="selectedTimeframe" (change)="onTimeframeChange()"
+                  class="w-full bg-[#090d16] border border-slate-700/80 rounded-xl px-3 py-2 text-sm font-mono text-slate-200 outline-none">
             <option value="15">15 Minutos (Intradía)</option>
             <option value="60">1 Hora</option>
-            <option value="D">1 Día (Diario)</option>
-            <option value="W">1 Semana (Visión Macro)</option>
+            <option value="D">1 Día</option>
+            <option value="W">1 Semana (Macro)</option>
           </select>
         </div>
 
-        <button (click)="runAnalysis()" [disabled]="loading" 
-                class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-50 text-slate-950 font-extrabold text-sm rounded-xl tracking-wider transition-all duration-200 shadow-lg shadow-emerald-500/20 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2">
-          @if (loading) {
-            <svg class="animate-spin h-4 w-4 text-slate-950" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-            </svg>
-            <span>EVALUANDO ACTIVO...</span>
-          } @else {
-            <span>EVALUAR SEÑAL ML</span>
-          }
-        </button>
-
-        @if (errorMessage) {
-          <div class="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-xl flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-            <span>{{ errorMessage }}</span>
+        @if (loading) {
+          <div class="text-center py-2 text-xs font-mono text-emerald-400 animate-pulse">
+            Sincronizando precio y objetivos...
           </div>
         }
       </section>
 
-      <!-- Gráfico Principal de TradingView -->
+      <!-- Gráfico TradingView -->
       <section class="lg:col-span-3 bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-4 shadow-2xl flex flex-col">
-        <div class="flex items-center justify-between pb-3 mb-2 border-b border-slate-800/80">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Gráfico Interactivo Oficial</span>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded border"
-                  [class.bg-emerald-500/10]="currentMarketStatus.isOpen"
-                  [class.border-emerald-500/20]="currentMarketStatus.isOpen"
-                  [class.text-emerald-400]="currentMarketStatus.isOpen"
-                  [class.bg-rose-500/10]="!currentMarketStatus.isOpen"
-                  [class.border-rose-500/20]="!currentMarketStatus.isOpen"
-                  [class.text-rose-400]="!currentMarketStatus.isOpen">
-              {{ currentMarketStatus.isOpen ? 'Cotización en Vivo' : 'Mercado en Pausa' }}
-            </span>
-          </div>
-          <span class="text-xs font-mono text-slate-400">{{ getCurrentTvSymbol() }}</span>
+        <div class="flex justify-between items-center pb-2 mb-2 border-b border-slate-800 text-xs font-mono">
+          <span class="text-slate-300 font-bold uppercase">Gráfico Oficial en Vivo</span>
+          <span class="text-emerald-400 font-bold">{{ getCurrentTvSymbol() }}</span>
         </div>
-        
-        <div style="width: 100%; height: 600px; min-height: 600px;" class="rounded-xl overflow-hidden bg-[#090d16]">
+        <div style="width: 100%; height: 500px;" class="rounded-xl overflow-hidden bg-[#090d16]">
           <div id="tv_chart_container" style="width: 100%; height: 100%;"></div>
         </div>
       </section>
-
     </div>
 
-    <!-- Módulo de Gestión de Riesgo y Calculadora Financiera xStation -->
+    <!-- TARJETA DEFINITIVA: FILAS APILADAS CON COPIAR A LA DERECHA Y RIESGO LIMITADO ($10-$15) -->
     @if (result?.risk) {
-      <section class="space-y-6">
+      <section class="space-y-5">
         
-        <!-- CALCULADORA VINCULADA AL SUELDO Y CAPITAL REAL -->
-        <div class="bg-gradient-to-r from-[#0f172a] via-[#131d35] to-[#0f172a] border border-emerald-500/40 rounded-2xl p-5 shadow-2xl space-y-4">
+        <!-- CALCULADORA DE PARÁMETROS FINANCIEROS (REACTIVA) -->
+        <div class="bg-gradient-to-r from-[#0f172a] via-[#131d35] to-[#0f172a] border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
             <div class="flex items-center gap-2.5">
-              <span class="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-base shadow-md">
+              <span class="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-base">
                 $
               </span>
               <div>
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">
-                  Calculadora Financiera Personalizada (xStation)
+                  Parámetros de Capital y Gestión de Riesgo
                 </h3>
-                <span class="text-[10px] text-slate-400">Protección patrimonial según tu sueldo mensual y capital disponible</span>
+                <span class="text-[10px] text-slate-400">Ajusta tu balance para calcular el volumen y riesgo de la orden</span>
               </div>
             </div>
 
-            <!-- Entradas del Perfil Financiero -->
+            <!-- Entradas con ngModelChange -->
             <div class="flex flex-wrap items-center gap-3 font-mono text-xs">
-              
-              <!-- Sueldo Mensual -->
               <div class="flex items-center gap-1.5 bg-[#090d16] px-3 py-1.5 rounded-xl border border-slate-800">
                 <span class="text-slate-400">Sueldo/Mes:</span>
                 <span class="text-teal-400 font-bold">$</span>
-                <input type="number" [(ngModel)]="userMonthlySalary" min="100" max="100000" step="50" 
+                <input type="number" [(ngModel)]="userMonthlySalary" (ngModelChange)="onCapitalChange()" min="1" step="5" 
                        class="w-16 bg-transparent text-white font-bold outline-none text-right">
               </div>
 
-              <!-- Capital en Broker -->
               <div class="flex items-center gap-1.5 bg-[#090d16] px-3 py-1.5 rounded-xl border border-slate-800">
                 <span class="text-slate-400">Capital Cuenta:</span>
                 <span class="text-emerald-400 font-bold">$</span>
-                <input type="number" [(ngModel)]="accountCapital" min="50" max="100000" step="50" 
-                       class="w-16 bg-transparent text-white font-bold outline-none text-right">
+                <input type="number" [(ngModel)]="accountCapital" (ngModelChange)="onCapitalChange()" min="1" step="1" 
+                       class="w-20 bg-transparent text-white font-bold outline-none text-right">
               </div>
 
-              <!-- Riesgo por Trade -->
               <div class="flex items-center gap-1.5 bg-[#090d16] px-3 py-1.5 rounded-xl border border-slate-800">
                 <span class="text-slate-400">Riesgo:</span>
-                <select [(ngModel)]="riskPercentage" class="bg-transparent text-emerald-400 font-bold outline-none cursor-pointer">
-                  <option [value]="1">1% (${{ (accountCapital * 0.01).toFixed(1) }})</option>
-                  <option [value]="2">2% (${{ (accountCapital * 0.02).toFixed(1) }})</option>
-                  <option [value]="3">3% (${{ (accountCapital * 0.03).toFixed(1) }})</option>
-                  <option [value]="5">5% (${{ (accountCapital * 0.05).toFixed(1) }})</option>
+                <select [(ngModel)]="riskPercentage" (ngModelChange)="onCapitalChange()" class="bg-transparent text-emerald-400 font-bold outline-none cursor-pointer">
+                  <option [value]="1">1% (${{ (accountCapital * 0.01).toFixed(2) }})</option>
+                  <option [value]="2">2% (${{ (accountCapital * 0.02).toFixed(2) }})</option>
+                  <option [value]="3">3% (${{ (accountCapital * 0.03).toFixed(2) }})</option>
+                  <option [value]="5">5% (${{ (accountCapital * 0.05).toFixed(2) }})</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <!-- Diagnóstico de Seguridad Financiera -->
           <div class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-[#090d16]/70 rounded-xl border border-slate-800 text-[11px] font-mono">
             <span class="text-slate-400">
-              Impacto por operación: Este trade arriesga <strong class="text-rose-400">${{ getRiskAmount().toFixed(2) }}</strong>, lo que equivale solo al <strong class="text-white">{{ getRiskVsSalaryPercentage() }}%</strong> de tu sueldo mensual.
+              Riesgo por trade: <strong class="text-rose-400">-${{ getAutoResolvedOrder().actualRisk }} USD</strong> (pérdida acotada a tu rango de \$10-\$15).
             </span>
             <span class="text-emerald-400 font-semibold">
-              Límite mensual prudente: ${{ getMaxMonthlyLossAllowed().toFixed(0) }}/mes máx. en pérdidas
+              Meta esperada: +${{ getAutoResolvedOrder().actualProfit }} USD (Ratio 1:2)
             </span>
-          </div>
-
-          <!-- Resultados de Órdenes Listas para xStation -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            <!-- Resultado Compra -->
-            <div class="bg-[#090d16] border border-emerald-500/20 rounded-xl p-4 space-y-2.5">
-              <div class="flex justify-between items-center pb-2 border-b border-slate-800 text-xs">
-                <span class="font-bold text-emerald-400">ORDEN COMPRA SUGERIDA</span>
-                <span class="text-[10px] text-slate-400 font-mono">Riesgo Máximo: ${{ getRiskAmount().toFixed(2) }}</span>
-              </div>
-
-              <div class="grid grid-cols-2 gap-3 text-xs font-mono">
-                <div class="bg-[#0d1322] p-2.5 rounded-lg border border-slate-800">
-                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Volumen / Acciones</span>
-                  <strong class="text-lg text-emerald-400">{{ calculatePositionSize('buy').shares }}</strong>
-                  <span class="text-[10px] text-slate-400 ml-1">unidades</span>
-                </div>
-                <div class="bg-[#0d1322] p-2.5 rounded-lg border border-slate-800">
-                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Inversión Requerida</span>
-                  <strong class="text-lg text-white">${{ calculatePositionSize('buy').totalCost }}</strong>
-                </div>
-              </div>
-
-              <div class="flex justify-between items-center text-[11px] font-mono pt-1">
-                <span class="text-rose-400">Pérdida si toca SL: -${{ calculatePositionSize('buy').actualRisk }}</span>
-                <span class="text-emerald-400">Ganancia si toca TP: +${{ calculatePositionSize('buy').actualProfit }}</span>
-              </div>
-            </div>
-
-            <!-- Resultado Venta -->
-            <div class="bg-[#090d16] border border-rose-500/20 rounded-xl p-4 space-y-2.5">
-              <div class="flex justify-between items-center pb-2 border-b border-slate-800 text-xs">
-                <span class="font-bold text-rose-400">ORDEN VENTA (CORTO) SUGERIDA</span>
-                <span class="text-[10px] text-slate-400 font-mono">Riesgo Máximo: ${{ getRiskAmount().toFixed(2) }}</span>
-              </div>
-
-              <div class="grid grid-cols-2 gap-3 text-xs font-mono">
-                <div class="bg-[#0d1322] p-2.5 rounded-lg border border-slate-800">
-                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Volumen / Acciones</span>
-                  <strong class="text-lg text-rose-400">{{ calculatePositionSize('sell').shares }}</strong>
-                  <span class="text-[10px] text-slate-400 ml-1">unidades</span>
-                </div>
-                <div class="bg-[#0d1322] p-2.5 rounded-lg border border-slate-800">
-                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Valor Posición</span>
-                  <strong class="text-lg text-white">${{ calculatePositionSize('sell').totalCost }}</strong>
-                </div>
-              </div>
-
-              <div class="flex justify-between items-center text-[11px] font-mono pt-1">
-                <span class="text-rose-400">Pérdida si toca SL: -${{ calculatePositionSize('sell').actualRisk }}</span>
-                <span class="text-emerald-400">Ganancia si toca TP: +${{ calculatePositionSize('sell').actualProfit }}</span>
-              </div>
-            </div>
-
           </div>
         </div>
 
-        <!-- Barra de Probabilidades Cuantitativas -->
-        @if (result?.probabilities) {
-          <div class="bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full" 
-                      [class.bg-emerald-400]="result?.decision === 'BUY'" 
-                      [class.bg-rose-400]="result?.decision === 'SELL'"
-                      [class.bg-amber-400]="result?.decision === 'HOLD'"></span>
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">
-                  Distribución Cuantitativa: Señal {{ result?.decision }} (Confianza: {{ ((result?.confidence || 0) * 100).toFixed(0) }}%)
+        <!-- TARJETA ÚNICA ALINEADA CON BOTÓN COPIAR A LA DERECHA -->
+        <div class="bg-[#0b101d] border border-slate-800/90 rounded-2xl p-6 shadow-2xl space-y-5">
+          
+          <!-- Encabezado superior -->
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3 h-3 rounded-full"
+                    [class.bg-emerald-400]="getAutoResolvedOrder().direction === 'BUY'"
+                    [class.bg-rose-500]="getAutoResolvedOrder().direction === 'SELL'"></span>
+              <div>
+                <span class="text-[9px] text-slate-400 uppercase font-mono block tracking-wider">VEREDICTO EXCLUSIVO DEL ALGORITMO</span>
+                <h3 class="text-base font-black tracking-wider uppercase font-mono"
+                    [class.text-emerald-400]="getAutoResolvedOrder().direction === 'BUY'"
+                    [class.text-rose-400]="getAutoResolvedOrder().direction === 'SELL'">
+                  {{ getAutoResolvedOrder().direction === 'BUY' ? 'ORDEN DETERMINADA: COMPRA (LONG)' : 'ORDEN DETERMINADA: VENTA (SHORT)' }}
                 </h3>
               </div>
-              <span class="text-xs font-mono text-slate-400">ATR (14): <strong class="text-emerald-400">{{ result?.risk?.atr_value }}</strong></span>
             </div>
 
-            <div class="flex justify-between text-xs font-mono">
-              <span class="text-emerald-400 font-bold">▲ Prob. Compra: {{ result?.probabilities?.buy }}%</span>
-              <span class="text-slate-400 font-semibold">■ Neutro: {{ result?.probabilities?.hold }}%</span>
-              <span class="text-rose-400 font-bold">▼ Prob. Venta: {{ result?.probabilities?.sell }}%</span>
-            </div>
-
-            <div class="h-2.5 w-full bg-slate-950 rounded-full flex overflow-hidden border border-slate-800">
-              <div [style.width.%]="result?.probabilities?.buy || 0" class="bg-emerald-500 transition-all duration-500"></div>
-              <div [style.width.%]="result?.probabilities?.hold || 0" class="bg-slate-600 transition-all duration-500"></div>
-              <div [style.width.%]="result?.probabilities?.sell || 0" class="bg-rose-500 transition-all duration-500"></div>
-            </div>
-          </div>
-        }
-
-        <!-- Tarjetas Duales de Niveles Técnicos -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          <!-- TARJETA COMPRA -->
-          <div class="bg-[#0f172a]/90 border border-emerald-500/30 rounded-2xl p-5 shadow-2xl space-y-4 relative overflow-hidden">
-            <div class="flex items-center justify-between pb-2 border-b border-emerald-500/20">
-              <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Escenario Compra (Long)</h4>
-              </div>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Ratio 1:2</span>
-            </div>
-            
-            <div class="space-y-2.5 font-mono text-xs">
-              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-slate-800">
-                <div>
-                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Precio Entrada</span>
-                  <span class="text-white font-bold text-base">{{ result?.risk?.buy_scenario?.entry_price }}</span>
-                </div>
-                <button (click)="copyToClipboard(result?.risk?.buy_scenario?.entry_price ?? null, 'buy_entry')" 
-                        class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">
-                  {{ copiedField === 'buy_entry' ? '✓ Copiado' : 'Copiar' }}
-                </button>
-              </div>
-
-              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-rose-500/20">
-                <div>
-                  <span class="text-[10px] text-rose-400 uppercase block font-sans">Stop Loss (-1.5 ATR)</span>
-                  <span class="text-rose-400 font-bold text-base">{{ result?.risk?.buy_scenario?.stop_loss }}</span>
-                </div>
-                <button (click)="copyToClipboard(result?.risk?.buy_scenario?.stop_loss ?? null, 'buy_sl')" 
-                        class="px-3 py-1.5 rounded-lg bg-rose-950/70 hover:bg-rose-900 text-rose-300 transition cursor-pointer">
-                  {{ copiedField === 'buy_sl' ? '✓ Copiado' : 'Copiar' }}
-                </button>
-              </div>
-
-              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-emerald-500/20">
-                <div>
-                  <span class="text-[10px] text-emerald-400 uppercase block font-sans">Take Profit (+3.0 ATR)</span>
-                  <span class="text-emerald-400 font-bold text-base">{{ result?.risk?.buy_scenario?.take_profit }}</span>
-                </div>
-                <button (click)="copyToClipboard(result?.risk?.buy_scenario?.take_profit ?? null, 'buy_tp')" 
-                        class="px-3 py-1.5 rounded-lg bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 transition cursor-pointer">
-                  {{ copiedField === 'buy_tp' ? '✓ Copiado' : 'Copiar' }}
-                </button>
-              </div>
+            <div class="flex items-center gap-2 font-mono text-xs">
+              <span class="px-3 py-1 rounded-lg bg-[#101524] border border-slate-800 text-slate-300">
+                Probabilidad: <strong>{{ getAutoResolvedOrder().probability }}%</strong>
+              </span>
+              <span class="px-3 py-1 rounded-lg bg-[#101524] border border-slate-800 text-slate-300">
+                Ratio R:R: <strong>1:2 Exacto</strong>
+              </span>
             </div>
           </div>
 
-          <!-- TARJETA VENTA -->
-          <div class="bg-[#0f172a]/90 border border-rose-500/30 rounded-2xl p-5 shadow-2xl space-y-4 relative overflow-hidden">
-            <div class="flex items-center justify-between pb-2 border-b border-rose-500/20">
-              <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-rose-400"></span>
-                <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wider">Escenario Venta (Short)</h4>
-              </div>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">Ratio 1:2</span>
-            </div>
+          <!-- BLOQUE DE 3 FILAS ALARGADAS CON BOTÓN COPIAR A LA DERECHA -->
+          <div class="space-y-3 font-mono">
             
-            <div class="space-y-2.5 font-mono text-xs">
-              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-slate-800">
-                <div>
-                  <span class="text-[10px] text-slate-500 uppercase block font-sans">Precio Entrada</span>
-                  <span class="text-white font-bold text-base">{{ result?.risk?.sell_scenario?.entry_price }}</span>
+            <!-- FILA 1: PRECIO ENTRADA -->
+            <div class="bg-[#101524] rounded-xl p-4 flex items-center justify-between border border-slate-800/70 hover:border-slate-700 transition">
+              <div class="space-y-1">
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-sans">PRECIO ENTRADA</span>
+                <strong class="text-2xl font-mono text-white font-bold tracking-tight">${{ getAutoResolvedOrder().entry }}</strong>
+              </div>
+              <button (click)="copyToClipboard(getAutoResolvedOrder().entry, 'entry')"
+                      class="px-6 py-2.5 rounded-xl bg-[#1e273d] hover:bg-slate-700 text-slate-200 font-mono text-xs transition cursor-pointer">
+                {{ copiedField === 'entry' ? '✓ Copiado' : 'Copiar' }}
+              </button>
+            </div>
+
+            <!-- FILA 2: STOP LOSS (PÉRDIDA LIMITADA A $10 - $15) -->
+            <div class="bg-[#101524] rounded-xl p-4 flex items-center justify-between border border-slate-800/70 hover:border-rose-950 transition">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] text-rose-500/90 uppercase tracking-wider block font-sans">STOP LOSS (-1.5 ATR)</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-rose-950/60 text-rose-400 border border-rose-500/20 font-mono">
+                    -{{ getAutoResolvedOrder().slDist }} pts (-{{ getAutoResolvedOrder().slPct }}%)
+                  </span>
                 </div>
-                <button (click)="copyToClipboard(result?.risk?.sell_scenario?.entry_price ?? null, 'sell_entry')" 
-                        class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">
-                  {{ copiedField === 'sell_entry' ? '✓ Copiado' : 'Copiar' }}
-                </button>
+                <strong class="text-2xl font-mono text-rose-400 font-bold tracking-tight">${{ getAutoResolvedOrder().sl }}</strong>
+              </div>
+              <button (click)="copyToClipboard(getAutoResolvedOrder().sl, 'sl')"
+                      class="px-6 py-2.5 rounded-xl bg-[#32131d] hover:bg-rose-950 text-rose-300 font-mono text-xs transition cursor-pointer border border-rose-500/20">
+                {{ copiedField === 'sl' ? '✓ Copiado' : 'Copiar' }}
+              </button>
+            </div>
+
+            <!-- FILA 3: TAKE PROFIT (GANANCIA LIMITADA A $20 - $50) -->
+            <div class="bg-[#101524] rounded-xl p-4 flex items-center justify-between border border-slate-800/70 hover:border-emerald-950 transition">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] text-emerald-500/90 uppercase tracking-wider block font-sans">TAKE PROFIT (+3.0 ATR)</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-500/20 font-mono">
+                    +{{ getAutoResolvedOrder().tpDist }} pts (+{{ getAutoResolvedOrder().tpPct }}%)
+                  </span>
+                </div>
+                <strong class="text-2xl font-mono text-emerald-400 font-bold tracking-tight">${{ getAutoResolvedOrder().tp }}</strong>
+              </div>
+              <button (click)="copyToClipboard(getAutoResolvedOrder().tp, 'tp')"
+                      class="px-6 py-2.5 rounded-xl bg-[#0e2925] hover:bg-emerald-950 text-emerald-300 font-mono text-xs transition cursor-pointer border border-emerald-500/20">
+                {{ copiedField === 'tp' ? '✓ Copiado' : 'Copiar' }}
+              </button>
+            </div>
+
+          </div>
+
+          <!-- BLOQUE DE DESGLOSE FINANCIERO CONTROLADO -->
+          <div class="bg-[#0d121f]/90 p-4 rounded-xl border border-slate-800/80 space-y-3">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block font-mono">
+              DESGLOSE FINANCIERO DE LA POSICIÓN (RIESGO CONTROLADO)
+            </span>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+              <div class="bg-[#090d16] p-3 rounded-lg border border-slate-800">
+                <span class="text-[9px] text-slate-400 uppercase block font-sans">VOLUMEN SUGERIDO</span>
+                <strong class="text-base text-white">{{ getAutoResolvedOrder().shares }}</strong>
+                <span class="text-[10px] text-slate-400 ml-1">unidades</span>
               </div>
 
-              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-rose-500/20">
-                <div>
-                  <span class="text-[10px] text-rose-400 uppercase block font-sans">Stop Loss (+1.5 ATR)</span>
-                  <span class="text-rose-400 font-bold text-base">{{ result?.risk?.sell_scenario?.stop_loss }}</span>
-                </div>
-                <button (click)="copyToClipboard(result?.risk?.sell_scenario?.stop_loss ?? null, 'sell_sl')" 
-                        class="px-3 py-1.5 rounded-lg bg-rose-950/70 hover:bg-rose-900 text-rose-300 transition cursor-pointer">
-                  {{ copiedField === 'sell_sl' ? '✓ Copiado' : 'Copiar' }}
-                </button>
+              <div class="bg-[#090d16] p-3 rounded-lg border border-slate-800">
+                <span class="text-[9px] text-slate-400 uppercase block font-sans">INVERSIÓN REQUERIDA</span>
+                <strong class="text-base text-white">${{ getAutoResolvedOrder().totalCost }}</strong>
+                <span class="text-[10px] text-slate-400 ml-1">USD</span>
               </div>
 
-              <div class="bg-[#090d16] p-3 rounded-xl flex justify-between items-center border border-emerald-500/20">
-                <div>
-                  <span class="text-[10px] text-emerald-400 uppercase block font-sans">Take Profit (-3.0 ATR)</span>
-                  <span class="text-emerald-400 font-bold text-base">{{ result?.risk?.sell_scenario?.take_profit }}</span>
-                </div>
-                <button (click)="copyToClipboard(result?.risk?.sell_scenario?.take_profit ?? null, 'sell_tp')" 
-                        class="px-3 py-1.5 rounded-lg bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 transition cursor-pointer">
-                  {{ copiedField === 'sell_tp' ? '✓ Copiado' : 'Copiar' }}
-                </button>
+              <div class="bg-[#090d16] p-3 rounded-lg border border-rose-500/20">
+                <span class="text-[9px] text-rose-400 uppercase block font-sans">RIESGO MÁXIMO (SL)</span>
+                <strong class="text-base text-rose-400">-${{ getAutoResolvedOrder().actualRisk }}</strong>
+                <span class="text-[10px] text-rose-500 ml-1">USD</span>
+              </div>
+
+              <div class="bg-[#090d16] p-3 rounded-lg border border-emerald-500/20">
+                <span class="text-[9px] text-emerald-400 uppercase block font-sans">GANANCIA ESTIMADA (TP)</span>
+                <strong class="text-base text-emerald-400">+${{ getAutoResolvedOrder().actualProfit }}</strong>
+                <span class="text-[10px] text-emerald-500 ml-1">USD</span>
               </div>
             </div>
           </div>
