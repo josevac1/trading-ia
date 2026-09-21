@@ -132,6 +132,11 @@ export class App implements OnInit, OnDestroy, AfterViewInit {
     this.cdr.detectChanges();
   }
 
+  onRiskChange(newRisk: number | string) {
+    this.riskPercentage = Number(newRisk);
+    this.onCapitalChange();
+  }
+
   onTimeframeChange() {
     this.renderTradingViewChart();
     this.runAnalysis();
@@ -280,13 +285,13 @@ export class App implements OnInit, OnDestroy, AfterViewInit {
   calculatePositionSize(scenario: 'buy' | 'sell'): { shares: number; totalCost: number; actualRisk: number; actualProfit: number } {
     const entry = Number(this.result?.current_price || (scenario === 'buy' ? this.result?.risk?.buy_scenario?.entry_price : this.result?.risk?.sell_scenario?.entry_price) || 0);
 
-    const customRisk = this.getRiskAmount();
-    const targetLossDollars = (customRisk >= 10 && customRisk <= 15) ? customRisk : 12.50;
+    const calculatedRisk = this.getRiskAmount();
+    const targetLossDollars = calculatedRisk > 0 ? calculatedRisk : 1.0;
     const targetProfitDollars = targetLossDollars * 2;
 
     let shares = 1;
-    if (entry > 0 && entry < 100) {
-      const estimatedAtrDistance = entry * 0.035;
+    if (entry > 0) {
+      const estimatedAtrDistance = Math.max(entry * 0.02, 0.01);
       shares = Math.max(1, Math.floor(targetLossDollars / estimatedAtrDistance));
     }
 
@@ -417,7 +422,6 @@ export class App implements OnInit, OnDestroy, AfterViewInit {
           hide_side_toolbar: false,
           withdateranges: true,
           save_image: false,
-          // Se cambiaron a los nombres compatibles del widget gratuito para evitar el error cannot_get_metainfo
           studies: [
             'MASimple@tv-basicstudies',
             'RSI@tv-basicstudies'
